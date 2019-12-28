@@ -12,6 +12,14 @@ view: users {
     sql: ${TABLE}."AGE" ;;
   }
 
+  dimension:age_tier{
+    type: tier
+    style: integer
+    tiers: [0,10,20,30,40,50,60,70,80,90]
+
+    sql: COALESCE(${age},0);;
+  }
+
   dimension: city {
     type: string
     sql: ${TABLE}."CITY" ;;

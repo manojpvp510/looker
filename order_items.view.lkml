@@ -28,7 +28,7 @@ view: order_items {
     allowed_value: { value: "Quarter" }
     allowed_value: { value: "Year" }
   }
-  dimension: date1 {
+  dimension: dates{
     label_from_parameter: date_granularity
     sql:
     CASE
