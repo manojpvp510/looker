@@ -70,4 +70,6 @@ explore: products {
   }
 }
 
-explore: users {}
+explore: users {
+  sql_always_where: ${created_date}>'2018-07-26' ;;
+}

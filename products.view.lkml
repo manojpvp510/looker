@@ -40,6 +40,7 @@ view: products {
 
   dimension: retail_price {
     type: number
+
     sql: ${TABLE}."RETAIL_PRICE" ;;
   }
 
@@ -50,6 +51,12 @@ view: products {
 
 measure:total_retail_price  {
   type: sum
+  precision: 4
+  sql: ${retail_price} ;;
+}
+measure: avg_price {
+  type: average
+
   sql: ${retail_price} ;;
 }
 
