@@ -37,6 +37,14 @@ explore: inventory_items {
 }
 
 explore: order_items {
+
+  conditionally_filter: {
+    filters: {
+      field: status
+      value: "Shipped"
+    }
+    unless: [created_month]
+  }
   join: users {
     type: left_outer
     sql_on: ${order_items.user_id} = ${users.id} ;;
@@ -60,7 +68,9 @@ explore: order_items {
     sql_on: ${products.distribution_center_id} = ${distribution_centers.id} ;;
     relationship: many_to_one
   }
+
 }
+
 
 explore: products {
   join: distribution_centers {

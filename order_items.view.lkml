@@ -6,7 +6,10 @@ view: order_items {
     type: number
     sql: ${TABLE}."ID" ;;
   }
+  dimension: cost {
 
+    sql: ${products.cost} ;;
+  }
   dimension_group: created {
     type: time
     timeframes: [
@@ -20,13 +23,36 @@ view: order_items {
     ]
     sql: ${TABLE}."CREATED_AT" ;;
   }
+  dimension_group: since_event {
+    type: duration
+    intervals: [hour, day, week, month, quarter, year]
+    sql_start: ${created_date} ;;
+    sql_end: ${delivered_date};;
+  }
 
+  measure: average_days_since_event {
+    type: average
+    sql: ${weeks_since_event} ;;
+  }
+
+  measure: average_days {
+    type: average
+    precision: 2
+    sql: ${days_since_event} ;;
+
+  }
+  dimension: linked_name {
+    sql: ${status};;
+
+    required_fields: [average_days]
+  }
   parameter: date_granularity {
     type: string
     allowed_value: { value: "Day" }
     allowed_value: { value: "Month" }
     allowed_value: { value: "Quarter" }
     allowed_value: { value: "Year" }
+    default_value: "Month"
   }
   dimension: dates{
     label_from_parameter: date_granularity
@@ -40,6 +66,51 @@ view: order_items {
   END ;;
   }
 
+
+parameter: SelectMeasure {
+  type: string
+  allowed_value: {value:"price"}
+  allowed_value: {value:"cost"}
+  allowed_value: {value:"usercount"}
+
+}
+
+measure: data {
+  label_from_parameter: SelectMeasure
+  sql:
+  CASE
+  when {% parameter SelectMeasure %} = 'price' then SUM(${sale_price})
+   when {% parameter SelectMeasure %} = 'cost' then SUM(${cost})
+   when {% parameter SelectMeasure %} = 'usercount' then ${User_count}
+  end
+  ;;
+}
+
+  parameter: item_to_add_up {
+    type: unquoted
+    allowed_value: {
+      label: "Total Sale Price"
+      value: "sale_price"
+    }
+    allowed_value: {
+      label: "Total Cost"
+      value: "cost"
+    }
+
+  }
+
+  measure: dynamic_sum {
+
+    label_from_parameter: item_to_add_up
+    sql:
+    CASE
+    WHEN {% parameter item_to_add_up %} = 'sale_price' THEN              sum(${sale_price})
+    WHEN {% parameter item_to_add_up %} = 'cost' THEN  sum(${products.cost})
+
+  END ;;
+
+  value_format_name: "usd"
+  }
 
 
 
@@ -57,6 +128,48 @@ view: order_items {
     ]
     sql: ${TABLE}."DELIVERED_AT" ;;
   }
+  parameter: measure_type {
+    #suggestions: ["sum","average","count","min","max"]
+    allowed_value: {value:"sum"}
+    allowed_value: {value:"average"}
+  }
+
+  parameter: dimension_to_aggregate {
+    type: unquoted
+    allowed_value: {
+      label: "Total Sale Price"
+      value: "sale_price"
+    }
+    allowed_value: {
+      label: "Count"
+      value:"User_count"    }
+  }
+
+  measure: dynamic_agg {
+    type: number
+    label_from_parameter: dimension_to_aggregate
+    sql: case when {% condition measure_type %} 'sum' {% endcondition %} then sum( ${TABLE}.{% parameter dimension_to_aggregate %})
+          when {% condition measure_type %} 'average' {% endcondition %} then avg( ${TABLE}.{% parameter dimension_to_aggregate %})
+          when {% condition measure_type %} 'count' {% endcondition %} then count( ${TABLE}.{% parameter dimension_to_aggregate %})
+          when {% condition measure_type %} 'min' {% endcondition %} then min( ${TABLE}.{% parameter dimension_to_aggregate %})
+          when {% condition measure_type %} 'max' {% endcondition %} then max( ${TABLE}.{% parameter dimension_to_aggregate %})
+          else null end;;
+
+
+  }
+  measure: dynamic_aggr {
+    type: number
+    label_from_parameter: dimension_to_aggregate
+    sql: case
+    when  {% parameter measure_type %}='sum' then sum( ${TABLE}.{% parameter dimension_to_aggregate %})
+    when  {% parameter measure_type %}='average' then avg( ${TABLE}.{% parameter dimension_to_aggregate %})
+    else null end
+
+    ;;
+  }
+
+
+
 
   dimension: inventory_item_id {
     type: number
@@ -125,11 +238,8 @@ view: order_items {
   # ----- Sets of fields for drilling ------
   set: detail {
     fields: [
-      id,
-      users.id, users.first_name,
-      users.last_name,
-      inventory_items.id,
-      inventory_items.product_name
+
+      inventory_items.product_name,sale_price
 
 
     ]
