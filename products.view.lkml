@@ -53,6 +53,8 @@ measure:total_retail_price  {
   type: sum
   precision: 4
   sql: ${retail_price} ;;
+  value_format_name:"decimal_2"
+  drill_fields: [category,brand]
 }
 measure: avg_price {
   type: average

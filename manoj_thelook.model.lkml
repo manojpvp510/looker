@@ -38,13 +38,8 @@ explore: inventory_items {
 
 explore: order_items {
 
-  conditionally_filter: {
-    filters: {
-      field: status
-      value: "Shipped"
-    }
-    unless: [created_month]
-  }
+
+
   join: users {
     type: left_outer
     sql_on: ${order_items.user_id} = ${users.id} ;;

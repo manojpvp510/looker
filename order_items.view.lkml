@@ -29,7 +29,17 @@ view: order_items {
     sql_start: ${created_date} ;;
     sql_end: ${delivered_date};;
   }
-
+  dimension: status1 {
+    sql: ${status} ;;
+    html: {% if value == 'Shipped' or value == 'Complete' %}
+         <p> <img src="C:/Users/BAPATLA/Downloads/age-limit.png" height=20 width=20>{{ rendered_value }}</p>
+      {% elsif value == 'Processing' %}
+        <p><img src="http://findicons.com/files/icons/1681/siena/128/clock_blue.png" height=20 width=20>{{ rendered_value }}</p>
+      {% else %}
+        <p><img src="http://findicons.com/files/icons/719/crystal_clear_actions/64/cancel.png" height=20 width=20>{{ rendered_value }}</p>
+      {% endif %}
+;;
+  }
   measure: average_days_since_event {
     type: average
     sql: ${weeks_since_event} ;;

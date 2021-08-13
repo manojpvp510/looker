@@ -22,6 +22,7 @@ view: users {
 
   dimension: city {
     type: string
+
     sql: ${TABLE}."CITY" ;;
   }
 
@@ -77,6 +78,7 @@ view: users {
 
   dimension: state {
     type: string
+    map_layer_name: us_states
     sql: ${TABLE}."STATE" ;;
   }
 
